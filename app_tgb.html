@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thời Gian Biểu Tuần</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: rgba(15, 23, 42, 0.78);
+      --panel-2: rgba(30, 41, 59, 0.72);
+      --line: rgba(148, 163, 184, 0.18);
+      --soft-line: rgba(148, 163, 184, 0.12);
+      --text: #e5eefc;
+      --muted: #94a3b8;
+      --primary: #7c3aed;
+      --primary-2: #22c55e;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --slot-height: 44px;
+      --radius: 22px;
+      --shadow: 0 12px 40px rgba(0, 0, 0, 0.28);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(124, 58, 237, 0.22), transparent 34%),
+        radial-gradient(circle at top right, rgba(34, 197, 94, 0.18), transparent 24%),
+        linear-gradient(135deg, #020617 0%, #0f172a 54%, #111827 100%);
+      color: var(--text);
+    }
+
+    body {
+      padding: 28px;
+    }
+
+    .app {
+      max-width: 1500px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 340px minmax(900px, 1fr);
+      gap: 22px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .sidebar {
+      padding: 22px;
+      position: sticky;
+      top: 20px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(124, 58, 237, 0.16);
+      color: #d8b4fe;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+    }
+
+    .subtext {
+      margin: 12px 0 18px;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 18px 0 22px;
+    }
+
+    .stat {
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 22px;
+      margin-bottom: 6px;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .form-card,
+    .tips,
+    .trash {
+      margin-top: 18px;
+      padding: 18px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .form-card h2,
+    .tips h3,
+    .trash h3 {
+      margin: 0 0 14px;
+      font-size: 16px;
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: #cbd5e1;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(15, 23, 42, 0.72);
+      color: var(--text);
+      outline: none;
+      transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+      font: inherit;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: rgba(167, 139, 250, 0.7);
+      box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.16);
+      transform: translateY(-1px);
+    }
+
+    .time-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      appearance: none;
+      border: none;
+      cursor: pointer;
+      border-radius: 14px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 700;
+      transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease, background .18s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #8b5cf6, #6366f1);
+      color: white;
+      box-shadow: 0 10px 24px rgba(99, 102, 241, 0.25);
+      flex: 1;
+    }
+
+    .btn-soft {
+      background: rgba(255, 255, 255, 0.08);
+      color: #e2e8f0;
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.16);
+      color: #fecaca;
+    }
+
+    .trash {
+      border-style: dashed;
+      text-align: center;
+      color: #fecaca;
+      min-height: 116px;
+      display: grid;
+      place-items: center;
+      transition: transform .2s ease, border-color .2s ease, background .2s ease;
+    }
+
+    .trash.active {
+      border-color: rgba(239, 68, 68, 0.7);
+      background: rgba(239, 68, 68, 0.12);
+      transform: scale(1.01);
+    }
+
+    .tips ul {
+      padding-left: 18px;
+      margin: 10px 0 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .board-wrap {
+      overflow: auto;
+      padding: 6px;
+    }
+
+    .board {
+      min-width: 1080px;
+      padding: 18px;
+    }
+
+    .board-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .board-title {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .board-title h2 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .board-title span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .legend {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .legend-item {
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .schedule-shell {
+      border-radius: 24px;
+      overflow: hidden;
+      background: rgba(2, 6, 23, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+    }
+
+    .schedule {
+      display: grid;
+      grid-template-columns: 84px repeat(7, minmax(130px, 1fr));
+      grid-template-rows: 70px auto;
+      min-height: 300px;
+    }
+
+    .corner {
+      grid-column: 1;
+      grid-row: 1;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.035);
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .day-header {
+      grid-row: 1;
+      padding: 14px 12px;
+      border-bottom: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.035);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 4px;
+      text-align: center;
+    }
+
+    .day-header strong {
+      font-size: 15px;
+    }
+
+    .day-header span {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .time-column {
+      grid-column: 1;
+      grid-row: 2;
+      position: relative;
+      height: calc(var(--slots) * var(--slot-height) + 22px);
+      border-right: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.025);
+    }
+
+    .time-label {
+      position: absolute;
+      left: 12px;
+      transform: translateY(-50%);
+      color: var(--muted);
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .day-column {
+      grid-row: 2;
+      position: relative;
+      height: calc(var(--slots) * var(--slot-height) + 22px);
+      border-right: 1px solid var(--line);
+      background:
+        linear-gradient(to bottom, rgba(255,255,255,.04), rgba(255,255,255,.015));
+    }
+
+    .day-slots {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-rows: repeat(var(--slots), var(--slot-height));
+    }
+
+    .slot {
+      border-bottom: 1px solid var(--soft-line);
+      transition: background .18s ease;
+    }
+
+    .slot.hour {
+      border-bottom-color: rgba(148, 163, 184, 0.24);
+    }
+
+    .slot.drop-target {
+      background: rgba(124, 58, 237, 0.16);
+      box-shadow: inset 0 0 0 1px rgba(196, 181, 253, 0.22);
+    }
+
+    .tasks-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      padding: 4px;
+    }
+
+    .task-card {
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      border-radius: 18px;
+      padding: 10px 12px;
+      border: 1px solid rgba(255,255,255,.14);
+      color: white;
+      box-shadow: 0 14px 28px rgba(0,0,0,.24);
+      pointer-events: auto;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transition: top .24s ease, height .24s ease, transform .18s ease, box-shadow .18s ease, opacity .18s ease;
+      cursor: grab;
+      user-select: none;
+    }
+
+    .task-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 18px 32px rgba(0,0,0,.28);
+    }
+
+    .task-card.dragging {
+      opacity: .55;
+      transform: scale(.98);
+      cursor: grabbing;
+    }
+
+    .task-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .task-title {
+      font-weight: 800;
+      font-size: 13px;
+      line-height: 1.35;
+      letter-spacing: -.01em;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .task-time {
+      font-size: 11px;
+      opacity: .92;
+      margin-top: 8px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .task-note {
+      font-size: 11px;
+      opacity: .85;
+      margin-top: 6px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .task-actions {
+      display: inline-flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .icon-btn {
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: rgba(255,255,255,.18);
+      color: white;
+      font-size: 14px;
+      box-shadow: none;
+    }
+
+    .icon-btn:hover {
+      background: rgba(255,255,255,.26);
+      transform: translateY(0);
+    }
+
+    .empty-state {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      font-size: 13px;
+      pointer-events: none;
+    }
+
+    .status {
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--muted);
+      min-height: 18px;
+    }
+
+    .status.ok {
+      color: #86efac;
+    }
+
+    .status.warn {
+      color: #fde68a;
+    }
+
+    @media (max-width: 1180px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+      }
+    }
+
+    @media (max-width: 720px) {
+      body {
+        padding: 16px;
+      }
+
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .time-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar panel">
+      <div class="badge">Planner tuần • kéo thả mượt</div>
+      <h1>Quản lý thời gian biểu đẹp, rõ, dễ chỉnh</h1>
+      <p class="subtext">
+        Thêm công việc theo ngày và giờ, kéo thả sang ô khác để đổi lịch, bấm sửa để chỉnh thời gian,
+        hoặc xóa nhanh bằng nút <strong>×</strong> hay kéo thả vào thùng rác.
+      </p>
+
+      <div class="stats">
+        <div class="stat">
+          <strong id="totalTasks">0</strong>
+          <span>Tổng công việc</span>
+        </div>
+        <div class="stat">
+          <strong id="todayTasks">0</strong>
+          <span>Việc hôm nay</span>
+        </div>
+        <div class="stat">
+          <strong id="busyHours">0h</strong>
+          <span>Tổng giờ bận</span>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <h2 id="formTitle">Thêm công việc mới</h2>
+        <div class="field">
+          <label for="taskTitle">Tên công việc</label>
+          <input id="taskTitle" type="text" placeholder="Ví dụ: Họp team, học tiếng Anh..." />
+        </div>
+
+        <div class="field">
+          <label for="taskDay">Ngày trong tuần</label>
+          <select id="taskDay"></select>
+        </div>
+
+        <div class="time-grid">
+          <div class="field">
+            <label for="taskStart">Bắt đầu</label>
+            <input id="taskStart" type="time" step="1800" value="08:00" min="06:00" max="22:30" />
+          </div>
+          <div class="field">
+            <label for="taskEnd">Kết thúc</label>
+            <input id="taskEnd" type="time" step="1800" value="09:00" min="06:30" max="23:00" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="taskNote">Ghi chú</label>
+          <textarea id="taskNote" rows="3" placeholder="Thêm ghi chú ngắn nếu muốn..."></textarea>
+        </div>
+
+        <div class="actions">
+          <button class="btn-primary" id="saveBtn">Thêm vào lịch</button>
+          <button class="btn-soft" id="cancelBtn" type="button">Làm mới</button>
+        </div>
+        <div class="status" id="statusText"></div>
+      </div>
+
+      <div class="trash" id="trashZone">
+        <div>
+          <h3>🗑️ Kéo thẻ vào đây để xóa</h3>
+          <div style="color: var(--muted); font-size: 13px; line-height: 1.6;">
+            Bạn cũng có thể bấm nút × ngay trên từng thẻ công việc.
+          </div>
+        </div>
+      </div>
+
+      <div class="tips">
+        <h3>Mẹo dùng nhanh</h3>
+        <ul>
+          <li>Kéo thả thẻ công việc sang ngày hoặc khung giờ khác để đổi lịch.</li>
+          <li>Bấm nút ✎ để sửa tên việc, ngày, giờ bắt đầu và giờ kết thúc.</li>
+          <li>Lịch có đủ <strong>Thứ Hai đến Chủ Nhật</strong> và hiển thị giờ từ <strong>06:00 đến 23:00</strong>.</li>
+          <li>Dữ liệu tự lưu trong trình duyệt, tải lại trang vẫn còn.</li>
+        </ul>
+      </div>
+    </aside>
+
+    <main class="board-wrap panel">
+      <div class="board">
+        <div class="board-head">
+          <div class="board-title">
+            <h2>Thời gian biểu trong tuần</h2>
+            <span>Bố cục bo tròn, sắc nét, chuyển động mượt và chỉnh được thời gian.</span>
+          </div>
+          <div class="legend">
+            <div class="legend-item">Kéo thả để đổi lịch</div>
+            <div class="legend-item">✎ để sửa giờ</div>
+            <div class="legend-item">× để xóa</div>
+          </div>
+        </div>
+
+        <div class="schedule-shell">
+          <div class="schedule" id="schedule"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const DAYS = [
+      { key: 'mon', label: 'Thứ Hai', short: 'T2' },
+      { key: 'tue', label: 'Thứ Ba', short: 'T3' },
+      { key: 'wed', label: 'Thứ Tư', short: 'T4' },
+      { key: 'thu', label: 'Thứ Năm', short: 'T5' },
+      { key: 'fri', label: 'Thứ Sáu', short: 'T6' },
+      { key: 'sat', label: 'Thứ Bảy', short: 'T7' },
+      { key: 'sun', label: 'Chủ Nhật', short: 'CN' }
+    ];
+
+    const START_MINUTES = 6 * 60;
+    const END_MINUTES = 23 * 60;
+    const SLOT_MINUTES = 30;
+    const TOTAL_SLOTS = (END_MINUTES - START_MINUTES) / SLOT_MINUTES;
+    const STORAGE_KEY = 'weekly_schedule_v2';
+    const SLOT_HEIGHT = 44;
+
+    const scheduleEl = document.getElementById('schedule');
+    const taskTitleEl = document.getElementById('taskTitle');
+    const taskDayEl = document.getElementById('taskDay');
+    const taskStartEl = document.getElementById('taskStart');
+    const taskEndEl = document.getElementById('taskEnd');
+    const taskNoteEl = document.getElementById('taskNote');
+    const saveBtn = document.getElementById('saveBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const formTitle = document.getElementById('formTitle');
+    const statusText = document.getElementById('statusText');
+    const trashZone = document.getElementById('trashZone');
+
+    let editingId = null;
+    let draggedTaskId = null;
+
+    const demoTasks = [
+      { id: uid(), title: 'Họp team', day: 'mon', start: '09:00', end: '10:30', note: 'Chuẩn bị báo cáo nhanh' },
+      { id: uid(), title: 'Tập thể dục', day: 'wed', start: '06:30', end: '07:30', note: 'Cardio + giãn cơ' },
+      { id: uid(), title: 'Học tiếng Anh', day: 'fri', start: '19:00', end: '20:30', note: 'Ôn từ vựng và nghe' }
+    ];
+
+    let tasks = loadTasks();
+
+    function uid() {
+      return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    }
+
+    function init() {
+      document.documentElement.style.setProperty('--slots', TOTAL_SLOTS);
+      document.documentElement.style.setProperty('--slot-height', `${SLOT_HEIGHT}px`);
+      fillDayOptions();
+      buildSchedule();
+      bindEvents();
+      renderAll();
+    }
+
+    function fillDayOptions() {
+      taskDayEl.innerHTML = DAYS.map(day => `<option value="${day.key}">${day.label}</option>`).join('');
+    }
+
+    function loadTasks() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if (Array.isArray(saved) && saved.length) return saved;
+      } catch (e) {}
+      return demoTasks;
+    }
+
+    function persist() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    }
+
+    function buildSchedule() {
+      scheduleEl.innerHTML = '';
+
+      const corner = document.createElement('div');
+      corner.className = 'corner';
+      corner.textContent = 'Giờ';
+      scheduleEl.appendChild(corner);
+
+      DAYS.forEach((day, index) => {
+        const header = document.createElement('div');
+        header.className = 'day-header';
+        header.style.gridColumn = index + 2;
+        header.innerHTML = `<strong>${day.label}</strong><span>${day.short}</span>`;
+        scheduleEl.appendChild(header);
+      });
+
+      const timeColumn = document.createElement('div');
+      timeColumn.className = 'time-column';
+      for (let i = 0; i <= TOTAL_SLOTS; i += 2) {
+        const label = document.createElement('div');
+        label.className = 'time-label';
+        label.style.top = `${i * SLOT_HEIGHT}px`;
+        label.textContent = minutesToTime(START_MINUTES + i * SLOT_MINUTES);
+        timeColumn.appendChild(label);
+      }
+      scheduleEl.appendChild(timeColumn);
+
+      DAYS.forEach((day, index) => {
+        const column = document.createElement('div');
+        column.className = 'day-column';
+        column.dataset.day = day.key;
+        column.style.gridColumn = index + 2;
+
+        const slots = document.createElement('div');
+        slots.className = 'day-slots';
+
+        for (let slot = 0; slot < TOTAL_SLOTS; slot++) {
+          const slotEl = document.createElement('div');
+          slotEl.className = 'slot';
+          if ((slot + 1) % 2 === 0) slotEl.classList.add('hour');
+          slotEl.dataset.day = day.key;
+          slotEl.dataset.slot = slot;
+
+          slotEl.addEventListener('dragover', e => {
+            e.preventDefault();
+            slotEl.classList.add('drop-target');
+          });
+
+          slotEl.addEventListener('dragleave', () => {
+            slotEl.classList.remove('drop-target');
+          });
+
+          slotEl.addEventListener('drop', e => {
+            e.preventDefault();
+            slotEl.classList.remove('drop-target');
+            moveTaskToSlot(draggedTaskId, day.key, Number(slotEl.dataset.slot));
+          });
+
+          slots.appendChild(slotEl);
+        }
+
+        const taskLayer = document.createElement('div');
+        taskLayer.className = 'tasks-layer';
+        taskLayer.dataset.day = day.key;
+
+        column.appendChild(slots);
+        column.appendChild(taskLayer);
+        scheduleEl.appendChild(column);
+      });
+
+      const emptyState = document.createElement('div');
+      emptyState.className = 'empty-state';
+      emptyState.id = 'emptyState';
+      emptyState.textContent = 'Chưa có công việc nào. Hãy thêm một việc ở khung bên trái.';
+      scheduleEl.parentElement.style.position = 'relative';
+      scheduleEl.parentElement.appendChild(emptyState);
+    }
+
+    function bindEvents() {
+      saveBtn.addEventListener('click', saveTask);
+      cancelBtn.addEventListener('click', resetForm);
+
+      trashZone.addEventListener('dragover', e => {
+        e.preventDefault();
+        trashZone.classList.add('active');
+      });
+
+      trashZone.addEventListener('dragleave', () => trashZone.classList.remove('active'));
+      trashZone.addEventListener('drop', e => {
+        e.preventDefault();
+        trashZone.classList.remove('active');
+        if (!draggedTaskId) return;
+        deleteTask(draggedTaskId, true);
+      });
+    }
+
+    function saveTask() {
+      const title = taskTitleEl.value.trim();
+      const day = taskDayEl.value;
+      const start = taskStartEl.value;
+      const end = taskEndEl.value;
+      const note = taskNoteEl.value.trim();
+
+      if (!title) {
+        setStatus('Bạn cần nhập tên công việc.', 'warn');
+        taskTitleEl.focus();
+        return;
+      }
+
+      if (!isValidTimeRange(start, end)) {
+        setStatus('Giờ kết thúc phải sau giờ bắt đầu và nằm trong khoảng 06:00 - 23:00.', 'warn');
+        return;
+      }
+
+      const payload = {
+        id: editingId || uid(),
+        title,
+        day,
+        start,
+        end,
+        note
+      };
+
+      if (editingId) {
+        tasks = tasks.map(task => task.id === editingId ? payload : task);
+        setStatus('Đã cập nhật công việc.', 'ok');
+      } else {
+        tasks.push(payload);
+        setStatus('Đã thêm công việc vào thời gian biểu.', 'ok');
+      }
+
+      sortTasks();
+      persist();
+      renderAll();
+      resetForm(false);
+    }
+
+    function sortTasks() {
+      tasks.sort((a, b) => {
+        const dayA = DAYS.findIndex(d => d.key === a.day);
+        const dayB = DAYS.findIndex(d => d.key === b.day);
+        if (dayA !== dayB) return dayA - dayB;
+        return timeToMinutes(a.start) - timeToMinutes(b.start);
+      });
+    }
+
+    function isValidTimeRange(start, end) {
+      const startMin = timeToMinutes(start);
+      const endMin = timeToMinutes(end);
+      return startMin >= START_MINUTES && endMin <= END_MINUTES && endMin > startMin;
+    }
+
+    function renderAll() {
+      renderTasks();
+      renderStats();
+      toggleEmptyState();
+    }
+
+    function renderTasks() {
+      document.querySelectorAll('.tasks-layer').forEach(layer => layer.innerHTML = '');
+
+      tasks.forEach(task => {
+        const layer = document.querySelector(`.tasks-layer[data-day="${task.day}"]`);
+        if (!layer) return;
+
+        const startSlot = timeToSlot(task.start);
+        const endSlot = timeToSlot(task.end);
+        const slotSpan = Math.max(1, endSlot - startSlot);
+        const color = getTaskColor(task.id);
+
+        const card = document.createElement('article');
+        card.className = 'task-card';
+        card.draggable = true;
+        card.dataset.id = task.id;
+        card.style.top = `${startSlot * SLOT_HEIGHT + 4}px`;
+        card.style.height = `${slotSpan * SLOT_HEIGHT - 8}px`;
+        card.style.background = color;
+
+        card.innerHTML = `
+          <div class="task-top">
+            <div class="task-title">${escapeHtml(task.title)}</div>
+            <div class="task-actions">
+              <button class="icon-btn" type="button" data-action="edit" title="Sửa công việc">✎</button>
+              <button class="icon-btn" type="button" data-action="delete" title="Xóa công việc">×</button>
+            </div>
+          </div>
+          <div class="task-time">${task.start} - ${task.end}</div>
+          ${task.note ? `<div class="task-note">${escapeHtml(task.note)}</div>` : ''}
+        `;
+
+        card.addEventListener('dragstart', e => {
+          draggedTaskId = task.id;
+          card.classList.add('dragging');
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', task.id);
+        });
+
+        card.addEventListener('dragend', () => {
+          draggedTaskId = null;
+          card.classList.remove('dragging');
+          document.querySelectorAll('.slot.drop-target').forEach(el => el.classList.remove('drop-target'));
+          trashZone.classList.remove('active');
+        });
+
+        card.addEventListener('click', e => {
+          const action = e.target.dataset.action;
+          if (action === 'edit') {
+            e.stopPropagation();
+            loadTaskToForm(task.id);
+          }
+          if (action === 'delete') {
+            e.stopPropagation();
+            deleteTask(task.id, false);
+          }
+        });
+
+        layer.appendChild(card);
+      });
+    }
+
+    function moveTaskToSlot(taskId, newDay, newSlot) {
+      if (!taskId) return;
+      const task = tasks.find(item => item.id === taskId);
+      if (!task) return;
+
+      const durationSlots = Math.max(1, timeToSlot(task.end) - timeToSlot(task.start));
+      const maxStart = TOTAL_SLOTS - durationSlots;
+      const safeSlot = Math.min(newSlot, maxStart);
+
+      task.day = newDay;
+      task.start = slotToTime(safeSlot);
+      task.end = slotToTime(safeSlot + durationSlots);
+
+      persist();
+      renderAll();
+      setStatus(`Đã chuyển "${task.title}" sang ${labelOfDay(newDay)} lúc ${task.start}.`, 'ok');
+    }
+
+    function loadTaskToForm(taskId) {
+      const task = tasks.find(item => item.id === taskId);
+      if (!task) return;
+
+      editingId = task.id;
+      taskTitleEl.value = task.title;
+      taskDayEl.value = task.day;
+      taskStartEl.value = task.start;
+      taskEndEl.value = task.end;
+      taskNoteEl.value = task.note || '';
+      formTitle.textContent = 'Chỉnh sửa công việc';
+      saveBtn.textContent = 'Lưu thay đổi';
+      setStatus(`Đang sửa: ${task.title}`, 'ok');
+      taskTitleEl.focus();
+      taskTitleEl.setSelectionRange(taskTitleEl.value.length, taskTitleEl.value.length);
+    }
+
+    function resetForm(clearStatus = true) {
+      editingId = null;
+      taskTitleEl.value = '';
+      taskDayEl.value = DAYS[0].key;
+      taskStartEl.value = '08:00';
+      taskEndEl.value = '09:00';
+      taskNoteEl.value = '';
+      formTitle.textContent = 'Thêm công việc mới';
+      saveBtn.textContent = 'Thêm vào lịch';
+      if (clearStatus) setStatus('');
+    }
+
+    function deleteTask(taskId, fromTrash) {
+      const task = tasks.find(item => item.id === taskId);
+      if (!task) return;
+      tasks = tasks.filter(item => item.id !== taskId);
+      if (editingId === taskId) resetForm(false);
+      persist();
+      renderAll();
+      setStatus(fromTrash ? `Đã kéo vào thùng rác: ${task.title}` : `Đã xóa công việc: ${task.title}`, 'ok');
+    }
+
+    function renderStats() {
+      document.getElementById('totalTasks').textContent = tasks.length;
+
+      const todayIndex = new Date().getDay();
+      const todayKey = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][todayIndex];
+      const todayCount = tasks.filter(task => task.day === todayKey).length;
+      document.getElementById('todayTasks').textContent = todayCount;
+
+      const totalMinutes = tasks.reduce((sum, task) => sum + (timeToMinutes(task.end) - timeToMinutes(task.start)), 0);
+      const totalHours = (totalMinutes / 60).toFixed(totalMinutes % 60 === 0 ? 0 : 1);
+      document.getElementById('busyHours').textContent = `${totalHours}h`;
+    }
+
+    function toggleEmptyState() {
+      const emptyState = document.getElementById('emptyState');
+      if (!emptyState) return;
+      emptyState.style.display = tasks.length ? 'none' : 'grid';
+    }
+
+    function setStatus(message, type = '') {
+      statusText.textContent = message;
+      statusText.className = `status ${type}`.trim();
+    }
+
+    function labelOfDay(dayKey) {
+      return DAYS.find(day => day.key === dayKey)?.label || dayKey;
+    }
+
+    function timeToMinutes(time) {
+      const [h, m] = time.split(':').map(Number);
+      return h * 60 + m;
+    }
+
+    function minutesToTime(minutes) {
+      const h = String(Math.floor(minutes / 60)).padStart(2, '0');
+      const m = String(minutes % 60).padStart(2, '0');
+      return `${h}:${m}`;
+    }
+
+    function timeToSlot(time) {
+      return Math.round((timeToMinutes(time) - START_MINUTES) / SLOT_MINUTES);
+    }
+
+    function slotToTime(slot) {
+      return minutesToTime(START_MINUTES + slot * SLOT_MINUTES);
+    }
+
+    function escapeHtml(text) {
+      return text
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function getTaskColor(seed) {
+      const colors = [
+        'linear-gradient(135deg, rgba(59,130,246,.92), rgba(37,99,235,.86))',
+        'linear-gradient(135deg, rgba(124,58,237,.92), rgba(99,102,241,.86))',
+        'linear-gradient(135deg, rgba(16,185,129,.92), rgba(5,150,105,.86))',
+        'linear-gradient(135deg, rgba(245,158,11,.94), rgba(249,115,22,.88))',
+        'linear-gradient(135deg, rgba(236,72,153,.9), rgba(219,39,119,.84))',
+        'linear-gradient(135deg, rgba(14,165,233,.92), rgba(6,182,212,.86))'
+      ];
+
+      let hash = 0;
+      for (let i = 0; i < seed.length; i++) {
+        hash = seed.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      return colors[Math.abs(hash) % colors.length];
+    }
+
+    init();
+  </script>
+</body>
+</html>
